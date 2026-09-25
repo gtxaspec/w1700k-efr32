@@ -76,3 +76,8 @@ docker run --rm --user root -v "$PWD/rcp:/work" \
 With the multiprotocol RCP, cap Bluetooth LE scanning: BlueZ scans at 100 % duty (an 11.25 ms
 window every 11.25 ms), which leaves the radio no time to receive 802.15.4. At 25 % both Thread
 and Bluetooth scans see their devices; the add-on applies that cap by default.
+
+## License
+
+MIT, see `LICENSE`. The firmware these scripts build contains Silicon Labs SDK code under Silicon
+Labs' own licenses.
