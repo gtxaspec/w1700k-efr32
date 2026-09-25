@@ -1,0 +1,6 @@
+/rcp/src-*/
+/rcp/build-*/
+/uart-test/src/
+/uart-test/build-*/
+*.gbl
+*.log
