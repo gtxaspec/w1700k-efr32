@@ -13,6 +13,10 @@ OpenWrt, through the factory bootloader and ser2net, with no case opening or deb
   applications
 - 460800 works on OpenWrt builds that carry the Airoha UART divider fix; without it the UART runs
   at half the configured rate (configure 230400 to get 115200)
+- Wi-Fi/Bluetooth coexistence lines (grant, request, priority) run between the MT7996 and the
+  EFR32 in Gemtek's FCC block diagram, but nothing drives them: the factory application that has
+  been dumped (an earlier board revision) configures no pins beyond PA5 and PA6, and the RCP built
+  here has no coexistence component either
 
 ser2net on the router (`/etc/config/ser2net`):
 
@@ -54,6 +58,11 @@ Bootloader behaviour worth knowing:
 - a refused application brings it straight back, announcing `dfu_boot_failure` then `dfu_boot`
 - HW 2.1 does not install an unsigned bootloader upgrade (the GBL verifies, then nothing
   changes), so keep the factory one
+- hardware entry, for an application that no longer answers: AN7581 GPIO536 is the EFR32's RESETn
+  and GPIO537 its bootloader-activation pin (EFR32 PB0), both active low. With nothing else on the
+  UART, hold 537 low, pulse 536 low, release 537, and `dfu_boot` arrives at 115200; `system_reset`
+  mode 0 boots the application again. Verified on HW 2.1 (sysfs numbers, gpiochip base 512); found
+  by [doer](https://doer.ee/projects/hardware/w1700k/reverse-engineering/) on an earlier board
 
 ## Firmware
 
@@ -76,6 +85,14 @@ docker run --rm --user root -v "$PWD/rcp:/work" \
 With the multiprotocol RCP, cap Bluetooth LE scanning: BlueZ scans at 100 % duty (an 11.25 ms
 window every 11.25 ms), which leaves the radio no time to receive 802.15.4. At 25 % both Thread
 and Bluetooth scans see their devices; the add-on applies that cap by default.
+
+## Related work
+
+- [doer.ee](https://doer.ee/projects/hardware/w1700k/): the J10 footprint next to the EFR32 is a
+  complete Mini Simplicity debug header (pinout measured), the GPIO536/537 lines above, and
+  single-protocol BLE, Zigbee and Thread images flashed through the same bootloader
+- [lightingghost/silabs-firmware-builder](https://github.com/lightingghost/silabs-firmware-builder/tree/sisdk-2025.12.x-w1700k):
+  single-protocol images on Simplicity SDK 2025.12 with the same board settings
 
 ## License
 
